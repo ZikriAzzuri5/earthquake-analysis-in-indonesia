@@ -1,138 +1,138 @@
-# Analisis Gempa Bumi di Indonesia (2008-2026)
+# Earthquake Analysis in Indonesia (2008-2026)
 
-> **Temuan utama:** Jumlah gempa yang tercatat melonjak hampir dua kali lipat pada 2025 (21.021 kejadian), tetapi lonjakan itu tidak muncul pada gempa magnitudo 4 ke atas, yang stabil di kisaran 1.400-2.800 per tahun pada tahun-tahun penuh (2009-2025). Kemungkinan besar lonjakan berasal dari gempa kecil yang lebih banyak tercatat, bukan dari gempa yang benar-benar bertambah.
+> **Key finding:** The number of recorded earthquakes nearly doubled in 2025 (21,021 events), but the jump does not appear in earthquakes of magnitude 4 and above, which stayed stable at roughly 1,400-2,800 per year in full years (2009-2025). The jump most likely comes from more small earthquakes being recorded, not from more earthquakes actually occurring.
 
-![Dashboard Analisis Gempa](dashboard.png)
+![Earthquake Analysis Dashboard](earthquake-analysis-in-indonesia-2008-2025.png)
 
-## Tujuan dan pertanyaan
+## Goals and questions
 
-Proyek ini menganalisis katalog gempa BMKG untuk menjawab tiga pertanyaan:
+This project analyzes the BMKG earthquake catalog to answer three questions:
 
-1. Wilayah mana yang paling sering mengalami gempa?
-2. Apakah ada hubungan antara kedalaman dan kekuatan (magnitudo) gempa?
-3. Apakah jumlah gempa tercatat naik, dan apakah itu karena gempanya bertambah atau karena pencatatannya berubah?
+1. Which regions experience the most earthquakes?
+2. Is there a relationship between depth and earthquake strength (magnitude)?
+3. Has the number of recorded earthquakes increased, and is that because more earthquakes occurred or because recording practices changed?
 
-## Sumber data
+## Data source
 
-- Dataset Kaggle **Earthquakes in Indonesia** (kekavigi): https://www.kaggle.com/datasets/kekavigi/earthquakes-in-indonesia
-- Data asli berasal dari Katalog Gempa Awal (preliminary) BMKG: https://repogempa.bmkg.go.id/eventcatalog
-- File yang dipakai: `katalog_gempa_v2.tsv` (176.384 baris, 37 kolom, mulai 1 November 2008). File lama `katalog_gempa.csv` tidak dipakai karena penulis dataset menandainya sebagai arsip sebelum migrasi sistem BMKG.
-- Lisensi dataset: Open Database; isi data milik penulis aslinya (BMKG).
+- Kaggle dataset **Earthquakes in Indonesia** (kekavigi): https://www.kaggle.com/datasets/kekavigi/earthquakes-in-indonesia
+- The original data comes from the BMKG Preliminary Earthquake Catalog: https://repogempa.bmkg.go.id/eventcatalog
+- File used: `katalog_gempa_v2.tsv` (176,384 rows, 37 columns, starting 1 November 2008). The older `katalog_gempa.csv` was not used because the dataset author marks it as an archive from before BMKG's system migration.
+- Dataset license: Open Database; the contents belong to the original authors (BMKG).
 
-## Alat
+## Tools
 
-Python (pandas) di Kaggle untuk pembersihan dan analisis, Power BI Desktop untuk dashboard.
+Python (pandas) on Kaggle for cleaning and analysis, Power BI Desktop for the dashboard.
 
-## Langkah pembersihan
+## Cleaning steps
 
-1. **Memilih kolom.** Dari 37 kolom hanya 8 dipakai: `eventID`, `datetime`, `latitude`, `longitude`, `magnitude`, `mag_type`, `depth`, `location`. Kolom mekanisme fokal (berakhiran FM dan kolom setelahnya) tidak dipakai karena sebagian besar kosong dan di luar cakupan analisis ini.
-2. **Memeriksa nilai kosong.** `magnitude` dan `mag_type` sama-sama kosong pada 1.405 baris (sekitar 0,8%) dan baris itu sama persis, jadi dibuang dari analisis. `location` kosong pada 28 baris.
-3. **Mengubah waktu.** Kolom `datetime` memiliki format campuran (ada yang dengan pecahan detik, ada yang tanpa), jadi dibaca dengan `format="ISO8601"` lalu diambil tahunnya.
-4. **Menyaring wilayah.** Versi 2 dataset tidak lagi dipotong ke wilayah Indonesia, jadi disaring dengan kotak koordinat lintang -11 sampai 6 dan bujur 94 sampai 142. Hasilnya **142.286 baris**.
-5. **Membuat kelas kedalaman:** dangkal (di bawah 70 km), menengah (70-300 km), dalam (di atas 300 km).
+1. **Selecting columns.** Of the 37 columns, only 8 were used: `eventID`, `datetime`, `latitude`, `longitude`, `magnitude`, `mag_type`, `depth`, `location`. The focal mechanism columns (those ending in FM and the columns after them) were not used because most of their values are empty and they fall outside the scope of this analysis.
+2. **Checking missing values.** `magnitude` and `mag_type` are both empty in the same 1,405 rows (about 0.8%), so those rows were dropped from the analysis. `location` is empty in 28 rows.
+3. **Parsing time.** The `datetime` column has mixed formats (some with fractional seconds, some without), so it was parsed with `format="ISO8601"` and the year was extracted.
+4. **Filtering the region.** Version 2 of the dataset is no longer clipped to Indonesia, so it was filtered with a coordinate box of latitude -11 to 6 and longitude 94 to 142. This leaves **142,286 rows**.
+5. **Creating depth classes:** shallow (under 70 km), intermediate (70-300 km), deep (over 300 km).
 
-## Temuan
+## Findings
 
-### 1. Jumlah gempa mentah per tahun menyesatkan
+### 1. Raw yearly earthquake counts are misleading
 
-| Tahun | Semua gempa | Magnitudo 4 ke atas |
+| Year | All earthquakes | Magnitude 4 and above |
 |---|---|---|
-| 2008 (mulai November) | 239 | 96 |
-| 2009 | 4.134 | 1.823 |
-| 2010 | 7.646 | 2.616 |
-| 2011 | 6.261 | 1.885 |
-| 2012 | 8.510 | 2.217 |
-| 2013 | 5.051 | 1.398 |
-| 2014 | 7.209 | 1.819 |
-| 2015 | 7.511 | 1.874 |
-| 2016 | 7.991 | 1.752 |
-| 2017 | 8.898 | 1.835 |
-| 2018 | 12.517 | 2.113 |
-| 2019 | 13.635 | 2.804 |
-| 2020 | 9.911 | 2.393 |
-| 2021 | 12.653 | 2.450 |
-| 2022 | 12.438 | 2.245 |
-| 2023 | 13.389 | 2.274 |
-| 2024 | 9.097 | 1.716 |
-| 2025 | **21.021** | 1.745 |
-| 2026 (belum penuh) | 8.273 | 1.199 |
+| 2008 (from November) | 239 | 96 |
+| 2009 | 4,134 | 1,823 |
+| 2010 | 7,646 | 2,616 |
+| 2011 | 6,261 | 1,885 |
+| 2012 | 8,510 | 2,217 |
+| 2013 | 5,051 | 1,398 |
+| 2014 | 7,209 | 1,819 |
+| 2015 | 7,511 | 1,874 |
+| 2016 | 7,991 | 1,752 |
+| 2017 | 8,898 | 1,835 |
+| 2018 | 12,517 | 2,113 |
+| 2019 | 13,635 | 2,804 |
+| 2020 | 9,911 | 2,393 |
+| 2021 | 12,653 | 2,450 |
+| 2022 | 12,438 | 2,245 |
+| 2023 | 13,389 | 2,274 |
+| 2024 | 9,097 | 1,716 |
+| 2025 | **21,021** | 1,745 |
+| 2026 (partial year) | 8,273 | 1,199 |
 
-Pada 2025 jumlah semua gempa naik sekitar dua kali lipat dibanding 2024, sedangkan gempa magnitudo 4 ke atas hampir tidak berubah. Gempa besar hampir selalu tertangkap sensor di mana pun, sehingga kenaikan yang hanya muncul pada gempa kecil lebih mungkin mencerminkan perubahan pencatatan. Penyebab pastinya (penambahan sensor, perubahan pemrosesan, atau hal lain) belum dapat dipastikan dari data ini.
+In 2025 the count of all earthquakes roughly doubled compared with 2024, while earthquakes of magnitude 4 and above barely changed. Large earthquakes are almost always captured by sensors wherever they are, so an increase that appears only among small earthquakes more likely reflects a change in recording. The exact cause (added sensors, changed processing, or something else) cannot be determined from this data.
 
-### 2. Jenis magnitudo berganti-ganti antar tahun
+### 2. Magnitude types alternate between years
 
-Data mencampur beberapa jenis magnitudo (`M`, `MLv`, `mb`, `Mw`, dan lainnya). Jenis `M` dominan pada 2010-2012, 2019-2022, 2024, dan 2026, sedangkan `MLv` dominan pada 2013-2018, 2023, dan 2025. Pada 2025, sekitar 17.600 dari 21.000 gempa bertipe `MLv`. Jenis magnitudo juga berkaitan dengan ukuran gempa: `MLv` rata-rata 3,3 dan `M` rata-rata 3,7, sedangkan `mb` rata-rata 4,9 dan jenis `Mw` 4,9 sampai 6,1. Jadi rata-rata magnitudo antar tahun dari data campuran ini tidak bisa dibandingkan begitu saja.
+The data mixes several magnitude types (`M`, `MLv`, `mb`, `Mw`, and others). Type `M` dominates in 2010-2012, 2019-2022, 2024, and 2026, while `MLv` dominates in 2013-2018, 2023, and 2025. In 2025, about 17,600 of the 21,000 earthquakes are of type `MLv`. Magnitude type is also related to earthquake size: `MLv` averages 3.3 and `M` averages 3.7, while `mb` averages 4.9 and the `Mw` types range from 4.9 to 6.1. So average magnitudes across years from this mixed data cannot simply be compared.
 
-### 3. Gempa besar terkonsentrasi di Indonesia timur
+### 3. Large earthquakes are concentrated in eastern Indonesia
 
-Dari sekitar 36.250 gempa magnitudo 4 ke atas, 10 wilayah teratas menyumbang sekitar 60%.
+Of roughly 36,250 earthquakes of magnitude 4 and above, the top 10 regions account for about 60%.
 
-| Wilayah | Jumlah gempa 4+ |
+| Region | Count (magnitude 4+) |
 |---|---|
-| Banda Sea | 5.278 |
-| Northern Molucca Sea | 2.535 |
-| Minahassa Peninsula, Sulawesi | 2.231 |
-| Talaud Islands | 2.079 |
-| Southern Sumatra | 2.047 |
-| Halmahera | 1.912 |
-| Northern Sumatra | 1.556 |
-| Irian Jaya Region | 1.555 |
-| Java | 1.411 |
-| South of Java | 1.302 |
+| Banda Sea | 5,278 |
+| Northern Molucca Sea | 2,535 |
+| Minahassa Peninsula, Sulawesi | 2,231 |
+| Talaud Islands | 2,079 |
+| Southern Sumatra | 2,047 |
+| Halmahera | 1,912 |
+| Northern Sumatra | 1,556 |
+| Irian Jaya Region | 1,555 |
+| Java | 1,411 |
+| South of Java | 1,302 |
 
-Wilayah di Indonesia timur (Banda, Maluku, Sulawesi Utara, Talaud, Halmahera) mendominasi. Sumatra bagian utara dan selatan jika digabung (sekitar 3.600) berada di urutan ketiga.
+Regions in eastern Indonesia (Banda, Maluku, North Sulawesi, Talaud, Halmahera) dominate. Northern and Southern Sumatra combined (about 3,600) rank third.
 
-### 4. Kedalaman tidak berkaitan dengan kekuatan
+### 4. Depth is not related to strength
 
-| Kelas kedalaman | Jumlah gempa 4+ | Rata-rata magnitudo |
+| Depth class | Count (magnitude 4+) | Average magnitude |
 |---|---|---|
-| Dangkal (di bawah 70 km) | 24.416 (sekitar 67%) | 4,49 |
-| Menengah (70-300 km) | 10.219 (sekitar 28%) | 4,51 |
-| Dalam (di atas 300 km) | 1.619 (sekitar 4,5%) | 4,49 |
+| Shallow (under 70 km) | 24,416 (about 67%) | 4.49 |
+| Intermediate (70-300 km) | 10,219 (about 28%) | 4.51 |
+| Deep (over 300 km) | 1,619 (about 4.5%) | 4.49 |
 
-Sekitar dua pertiga gempa 4+ terjadi di kedalaman dangkal. Rata-rata magnitudo hampir sama di ketiga kelas. Perlu diingat bahwa karena data dibatasi pada magnitudo 4 ke atas, rata-ratanya memang cenderung mengumpul di sekitar 4,5, sehingga perbandingan ini tidak terlalu informatif.
+About two thirds of magnitude 4+ earthquakes occur at shallow depth. Average magnitude is nearly the same across all three classes. Note that because the data is limited to magnitude 4 and above, the averages naturally cluster around 4.5, so this comparison is not very informative.
 
-## Kesimpulan
+## Conclusions
 
-- Jumlah gempa mentah per tahun tidak layak dipakai untuk menyimpulkan bahwa gempa bertambah. Lonjakan 2025 hanya terlihat pada gempa kecil, sedangkan gempa magnitudo 4 ke atas stabil di kisaran 1.400-2.800 per tahun.
-- Perbandingan antar tahun sebaiknya memakai batas magnitudo, bukan semua kejadian.
-- Gempa magnitudo 4 ke atas terkonsentrasi di Indonesia timur, dengan Banda Sea sebagai wilayah teratas.
-- Pada gempa magnitudo 4 ke atas, tidak terlihat hubungan antara kedalaman dan kekuatan gempa.
+- Raw yearly earthquake counts are not suitable for concluding that earthquakes are increasing. The 2025 jump appears only in small earthquakes, while earthquakes of magnitude 4 and above stay stable at roughly 1,400-2,800 per year.
+- Comparisons across years should use a magnitude threshold rather than all events.
+- Earthquakes of magnitude 4 and above are concentrated in eastern Indonesia, with the Banda Sea as the top region.
+- Among earthquakes of magnitude 4 and above, no relationship between depth and strength is visible.
 
-## Keterbatasan
+## Limitations
 
-- **Data preliminary.** Penulis dataset menyebut solusi gempa terbaru masih dapat direvisi, dan 2008 (mulai November) serta 2026 bukan tahun penuh.
-- **Jenis magnitudo bercampur** (`M`, `MLv`, `mb`, `Mw`, dan lainnya), sehingga rata-rata magnitudo antar tahun tidak sepenuhnya sebanding.
-- **Penyaringan wilayah memakai kotak koordinat, bukan batas negara.** Kotak itu juga mencakup perairan dan daratan di sekitar Indonesia, misalnya sebagian Filipina selatan, Papua Nugini bagian barat, dan Timor-Leste.
-- **Dua sumber hitungan berbeda pada grafik tren.** Kolom "semua gempa" dihitung dari data sebelum penyaringan wilayah dan magnitudo kosong (176.384 baris), sedangkan "magnitudo 4 ke atas" dari data yang sudah disaring. Selisihnya tidak mengubah kesimpulan, tetapi angkanya berasal dari dua dasar hitung.
-- **Luas wilayah pada kolom `location` tidak sama.** Banda Sea sangat luas, sehingga sebagian angkanya mencerminkan luas wilayah, bukan hanya tingkat aktivitas.
-- **Penyebab lonjakan 2025 belum terbukti.** Dugaan perubahan pencatatan didasarkan pada pola data dan belum dikonfirmasi oleh BMKG.
-- **Jumlah gempa bukan tingkat bahaya.** Banyak gempa terjadi di laut dalam yang jauh dari permukiman.
+- **Preliminary data.** The dataset author notes that the latest earthquake solutions may still be revised, and 2008 (from November) and 2026 are not full years.
+- **Mixed magnitude types** (`M`, `MLv`, `mb`, `Mw`, and others), so average magnitudes across years are not fully comparable.
+- **Region filtering uses a coordinate box, not national borders.** The box also covers waters and land around Indonesia, for example parts of the southern Philippines, western Papua New Guinea, and Timor-Leste.
+- **Two different counting bases in the trend chart.** The "all earthquakes" series is counted from data before region and missing-magnitude filtering (176,384 rows), while "magnitude 4 and above" comes from the filtered data. The difference does not change the conclusion, but the numbers come from two different bases.
+- **Regions in the `location` column differ in size.** The Banda Sea is very large, so part of its count reflects its area, not only its level of activity.
+- **The cause of the 2025 jump is unproven.** The recording-change explanation is based on patterns in the data and has not been confirmed by BMKG.
+- **Earthquake counts are not hazard levels.** Many earthquakes occur in deep sea far from populated areas.
 
-## Saran dan langkah lanjutan
+## Recommendations and next steps
 
-**Untuk yang memakai data ini**
-- Pakai batas magnitudo (misalnya 4 ke atas) saat membandingkan jumlah gempa antar tahun, dan sebutkan batas itu di setiap grafik.
-- Jangan membandingkan magnitudo antar jenis (`M`, `MLv`, `mb`, `Mw`) tanpa penyetaraan. Kalau perlu, analisis per jenis atau fokus ke jenis tertentu saja.
-- Buang atau tandai tahun yang tidak penuh (2008 dan 2026) pada analisis tren.
+**For anyone using this data**
+- Use a magnitude threshold (for example 4 and above) when comparing earthquake counts across years, and state that threshold on every chart.
+- Do not compare magnitudes across types (`M`, `MLv`, `mb`, `Mw`) without harmonizing them. If needed, analyze per type or focus on a single type.
+- Drop or flag incomplete years (2008 and 2026) in trend analysis.
 
-**Untuk memperkuat analisis ini**
-1. Cari tahu penyebab lonjakan 2025: hubungi atau periksa dokumentasi BMKG tentang perubahan sensor dan pemrosesan katalog, serta bandingkan dengan katalog USGS untuk periode yang sama.
-2. Tentukan magnitudo kelengkapan (batas minimum yang konsisten tercatat) per periode secara lebih formal, bukan hanya memilih angka 4.
-3. Ganti kotak koordinat dengan batas wilayah yang lebih tepat (misalnya poligon Indonesia) atau saring berdasarkan kolom lokasi.
-4. Lengkapi pertanyaan pertama dengan analisis perubahan pola wilayah per tahun (tabel tahun x wilayah untuk beberapa wilayah teratas).
-5. Selidiki tahun dengan nilai tinggi pada gempa 4+ (misalnya 2019) untuk melihat wilayah dan kejadian apa yang mendorongnya.
+**To strengthen this analysis**
+1. Find out what caused the 2025 jump: contact BMKG or check their documentation on sensor and catalog processing changes, and compare with the USGS catalog for the same period.
+2. Determine the magnitude of completeness (the minimum magnitude consistently recorded) per period more formally, instead of simply choosing 4.
+3. Replace the coordinate box with a more accurate boundary (for example an Indonesia polygon) or filter by the location column.
+4. Complete the first question with an analysis of how regional patterns change per year (a year x region table for the top regions).
+5. Investigate years with high magnitude 4+ counts (for example 2019) to see which regions and events drove them.
 
-## Isi repositori
+## Repository contents
 
-- `analisis_gempa.ipynb`: notebook analisis (Python)
-- `gempa.pbix`: file dashboard Power BI
-- `dashboard.png` dan `dashboard.pdf`: tampilan dashboard
+- `analisis_gempa.ipynb`: analysis notebook (Python)
+- `gempa.pbix`: Power BI dashboard file
+- `dashboard.png` and `dashboard.pdf`: dashboard views
 
-## Cara membuka dashboard
+## How to open the dashboard
 
-File `.pbix` memerlukan **Power BI Desktop** (hanya untuk Windows). Jika tidak memilikinya, lihat `dashboard.png` atau `dashboard.pdf`. Notebook dijalankan di Kaggle dengan menambahkan dataset di atas sebagai input.
+The `.pbix` file requires **Power BI Desktop** (Windows only). If you do not have it, see `dashboard.png` or `dashboard.pdf`. The notebook runs on Kaggle by adding the dataset above as an input.
 
-## Dibuat oleh
+## Author
 
 Zikri
