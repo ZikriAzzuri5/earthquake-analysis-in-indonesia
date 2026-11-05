@@ -131,7 +131,7 @@ About two thirds of magnitude 4+ earthquakes occur at shallow depth. Average mag
 
 ## How to open the dashboard
 
-The `.pbix` file requires **Power BI Desktop** (Windows only). If you do not have it, see `dashboard.png` or `dashboard.pdf`. The notebook runs on Kaggle by adding the dataset above as an input.
+The `.pbix` file requires **Power BI Desktop** (Windows only). If you do not have it, see `earthquake-analysis-in-indonesia-2008-2025.png` or `earthquake-analysis-in-indonesia-2008-2025.pdf`. The notebook runs on Kaggle by adding the dataset above as an input.
 
 ## Author
 
